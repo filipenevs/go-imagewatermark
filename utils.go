@@ -3,23 +3,8 @@ package imagewatermark
 import (
 	"image"
 	"math/rand"
-	"os"
 	"time"
-
-	"github.com/disintegration/imaging"
-	_ "golang.org/x/image/webp"
 )
-
-// loadImageFromFile opens and decodes an image file.
-func loadImageFromFile(path string) (image.Image, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	return imaging.Decode(file)
-}
 
 // getNewWatermarkWidth calculates the new watermark width based on a percentage.
 func getNewWatermarkWidth(originalImage image.Image, watermarkWidthPercentage float64) int {

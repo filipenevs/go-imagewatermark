@@ -5,6 +5,7 @@ import (
 	"image"
 
 	"github.com/disintegration/imaging"
+	_ "golang.org/x/image/webp"
 )
 
 type VerticalAlign string
@@ -79,14 +80,14 @@ func ProcessImageWithWatermark(
 		return nil, fmt.Errorf("invalid watermark configuration: %w", err)
 	}
 
-	inputImage, err := loadImageFromFile(config.InputPath)
+	inputImage, err := imaging.Open(config.InputPath, imaging.AutoOrientation(true))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load input image: %v", err)
+		return nil, fmt.Errorf("failed to load input image: %w", err)
 	}
 
-	watermarkImage, err := loadImageFromFile(config.WatermarkPath)
+	watermarkImage, err := imaging.Open(config.WatermarkPath, imaging.AutoOrientation(true))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load watermark image: %v", err)
+		return nil, fmt.Errorf("failed to load watermark image: %w", err)
 	}
 
 	watermarkWidth := getNewWatermarkWidth(inputImage, config.WatermarkWidthPercent)
