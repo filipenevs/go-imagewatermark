@@ -10,6 +10,7 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
+// loadImageFromFile opens and decodes an image file.
 func loadImageFromFile(path string) (image.Image, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -17,19 +18,17 @@ func loadImageFromFile(path string) (image.Image, error) {
 	}
 	defer file.Close()
 
-	img, err := imaging.Decode(file)
-	if err != nil {
-		return nil, err
-	}
-	return img, nil
+	return imaging.Decode(file)
 }
 
+// getNewWatermarkWidth calculates the new watermark width based on a percentage.
 func getNewWatermarkWidth(originalImage image.Image, watermarkWidthPercentage float64) int {
 	originalImageWidth := float64(originalImage.Bounds().Dx())
 
 	return int(originalImageWidth * (watermarkWidthPercentage / 100))
 }
 
+// getWatermarkPosition calculates the position of the watermark based on alignment and spacing.
 func getWatermarkPosition(inputImage, watermarkImage image.Image, verticalAlign VerticalAlign, horizontalAlign HorizontalAlign, spacing int) image.Point {
 	inputImageBounds := inputImage.Bounds()
 	watermarkImageBounds := watermarkImage.Bounds()
