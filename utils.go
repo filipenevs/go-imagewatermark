@@ -44,7 +44,9 @@ func getWatermarkPosition(inputImage, watermarkImage image.Image, verticalAlign 
 		position.X = inputImageBounds.Dx() - watermarkImageBounds.Dx() - spacing
 	case HorizontalRandom:
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		position.X = int(r.Float64()*(float64(inputImageBounds.Dx())-float64(watermarkImageBounds.Dx()))) + spacing
+		minX := spacing
+		maxX := max(inputImageBounds.Dx()-watermarkImageBounds.Dx()-spacing, minX)
+		position.X = r.Intn(maxX-minX+1) + minX
 	default:
 		return image.Point{}
 	}
@@ -58,7 +60,9 @@ func getWatermarkPosition(inputImage, watermarkImage image.Image, verticalAlign 
 		position.Y = inputImageBounds.Dy() - watermarkImageBounds.Dy() - spacing
 	case VerticalRandom:
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		position.Y = int(r.Float64()*(float64(inputImageBounds.Dy())-float64(watermarkImageBounds.Dy()))) + spacing
+		minY := spacing
+		maxY := max(inputImageBounds.Dy()-watermarkImageBounds.Dy()-spacing, minY)
+		position.Y = r.Intn(maxY-minY+1) + minY
 	default:
 		return image.Point{}
 	}
