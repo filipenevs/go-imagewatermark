@@ -48,7 +48,7 @@ func getWatermarkPosition(inputImage, watermarkImage image.Image, verticalAlign 
 		maxX := max(inputImageBounds.Dx()-watermarkImageBounds.Dx()-spacing, minX)
 		position.X = r.Intn(maxX-minX+1) + minX
 	default:
-		return image.Point{}
+		position.X = int(inputImageBounds.Dx()/2) - (watermarkImageBounds.Dx() / 2)
 	}
 
 	switch verticalAlign {
@@ -64,7 +64,7 @@ func getWatermarkPosition(inputImage, watermarkImage image.Image, verticalAlign 
 		maxY := max(inputImageBounds.Dy()-watermarkImageBounds.Dy()-spacing, minY)
 		position.Y = r.Intn(maxY-minY+1) + minY
 	default:
-		return image.Point{}
+		position.Y = int((inputImageBounds.Dy() / 2) - (watermarkImageBounds.Dy() / 2))
 	}
 
 	return position
