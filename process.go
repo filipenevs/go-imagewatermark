@@ -80,7 +80,9 @@ func ProcessImageWithWatermark(
 
 	watermarkWidth := getNewWatermarkWidth(inputImage, config.WatermarkWidthPercent)
 	watermarkImage = imaging.Resize(watermarkImage, watermarkWidth, 0, imaging.Lanczos)
-	watermarkImage = imaging.Rotate(watermarkImage, config.RotationDegrees, image.Transparent)
+	if config.RotationDegrees != 0 {
+		watermarkImage = imaging.Rotate(watermarkImage, config.RotationDegrees, image.Transparent)
+	}
 
 	watermarkPosition := getWatermarkPosition(inputImage, watermarkImage, config.VerticalAlign, config.HorizontalAlign, config.Spacing)
 
