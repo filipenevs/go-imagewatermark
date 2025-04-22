@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2025-04-22
+
+### Added
+- Initial stable release 🎉
+
+### Changed
+- Refactored image loading logic to use `imaging.Open`, ensuring automatic correction of image orientation based on EXIF metadata.
+
+---
+
 ## [0.1.1] - 2025-04-22
 
 ### Fixed
