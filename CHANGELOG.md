@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-02-14
+
+### Added
+- Support for custom resampling filters with Catmull-Rom as default
+
+### Docs
+- Correct indentation in example code
+
+---
+
 ## [2.0.0] - 2026-02-13
 
 ### Added
