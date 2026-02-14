@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - 2026-02-13
+
+### Added
+- Grid pattern support with customizable spacing and offsets.
+- High-performance blending engine using native 'image/draw'.
+- Custom byte-level alpha blending (faster than 'imaging').
+- Concurrent image loading via Goroutines.
+
+### Changed
+- Default interpolator changed to Catmull-Rom for better speed/quality balance.
+- Rendering pipeline now uses concrete types (*image.RGBA) for CPU optimization.
+
+### Refactored
+- Alignment constants migrated to 'iota' (int) for faster comparisons.
+- Optimized positioning logic.
+- Centralized image loading for improved reusability.
+- Eliminated redundant image cloning to reduce memory overhead.
+
+---
+
 ## [1.0.0] - 2025-04-22
 
 ### Added
