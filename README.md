@@ -55,6 +55,7 @@ func main() {
 		}
 }
 ```
+<img width="600" height="400" alt="output_image_example_1" src="https://github.com/user-attachments/assets/78cc0e97-8ca4-4e4a-b2cf-e2acb911ef76" />
 
 ### Grid Watermark Example
 
@@ -92,6 +93,7 @@ func main() {
 		}
 }
 ```
+<img width="600" height="400" alt="output_image_example_2" src="https://github.com/user-attachments/assets/7f06ce27-0335-4205-a1f9-8f897159b12f" />
 
 ---
 
