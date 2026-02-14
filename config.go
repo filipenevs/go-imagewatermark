@@ -9,7 +9,7 @@ import "fmt"
 //   - VerticalMiddle: Centers the watermark vertically.
 //   - VerticalBottom: Aligns the watermark to the bottom of the image.
 //   - VerticalRandom: Places the watermark at a random vertical position.
-type VerticalAlign string
+type VerticalAlign int
 
 // HorizontalAlign defines the horizontal alignment options for watermark placement.
 //
@@ -18,20 +18,20 @@ type VerticalAlign string
 //   - HorizontalMiddle: Centers the watermark horizontally.
 //   - HorizontalRight: Aligns the watermark to the right of the image.
 //   - HorizontalRandom: Places the watermark at a random horizontal position.
-type HorizontalAlign string
+type HorizontalAlign int
 
 const (
-	VerticalTop    VerticalAlign = "top"
-	VerticalMiddle VerticalAlign = "mid"
-	VerticalBottom VerticalAlign = "bottom"
-	VerticalRandom VerticalAlign = "rand"
+	VerticalTop VerticalAlign = iota
+	VerticalMiddle
+	VerticalBottom
+	VerticalRandom
 )
 
 const (
-	HorizontalLeft   HorizontalAlign = "left"
-	HorizontalMiddle HorizontalAlign = "mid"
-	HorizontalRight  HorizontalAlign = "right"
-	HorizontalRandom HorizontalAlign = "rand"
+	HorizontalLeft HorizontalAlign = iota
+	HorizontalMiddle
+	HorizontalRight
+	HorizontalRandom
 )
 
 // GeneralConfig holds common configuration settings for all watermarking operations.
