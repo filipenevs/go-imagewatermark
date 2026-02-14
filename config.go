@@ -1,6 +1,10 @@
 package imagewatermark
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/disintegration/imaging"
+)
 
 // VerticalAlign defines the vertical alignment options for watermark placement.
 //
@@ -45,12 +49,14 @@ const (
 //   - OpacityAlpha: Transparency level of the watermark (0.0 to 1.0, where 1.0 is fully opaque).
 //   - WatermarkWidthPercent: Desired watermark width as a percentage of the input image width (0-100).
 //   - RotationDegrees: Rotation angle for the watermark in degrees (0-360).
+//   - ResampleFilter: Resampling filter to use when resizing the watermark. (Default is CatmullRom)
 type GeneralConfig struct {
 	InputPath             string
 	WatermarkPath         string
 	OpacityAlpha          float64
 	WatermarkWidthPercent float64
 	RotationDegrees       float64
+	ResampleFilter        imaging.ResampleFilter
 }
 
 // validate checks if the GeneralConfig has valid values for all fields.

@@ -61,7 +61,12 @@ func preprocessWatermark(originalImage image.Image, watermarkImage image.Image, 
 
 	watermarkWidth := getNewWatermarkWidth(originalImage, config.WatermarkWidthPercent)
 
-	resizedWatermarkImage := imaging.Resize(watermarkImage, watermarkWidth, 0, imaging.CatmullRom)
+	resampleFilter := config.ResampleFilter
+	if resampleFilter.Support <= 0 {
+		resampleFilter = imaging.CatmullRom
+	}
+
+	resizedWatermarkImage := imaging.Resize(watermarkImage, watermarkWidth, 0, resampleFilter)
 
 	if config.RotationDegrees != 0 {
 		resizedWatermarkImage = imaging.Rotate(resizedWatermarkImage, config.RotationDegrees, image.Transparent)
