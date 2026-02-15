@@ -2,7 +2,6 @@ package imagewatermark
 
 import (
 	"fmt"
-	"image"
 
 	"github.com/disintegration/imaging"
 )
@@ -45,15 +44,11 @@ const (
 // appearance settings that apply to any watermarking method (single or grid).
 //
 // Fields:
-//   - InputImage: The input image to which the watermark will be applied.
-//   - WatermarkImage: The watermark image to be applied.
 //   - OpacityAlpha: Transparency level of the watermark (0.0 to 1.0, where 1.0 is fully opaque).
 //   - WatermarkWidthPercent: Desired watermark width as a percentage of the input image width (0-100).
 //   - RotationDegrees: Rotation angle for the watermark in degrees (0-360).
 //   - ResampleFilter: Resampling filter to use when resizing the watermark. (Default is CatmullRom)
 type GeneralConfig struct {
-	InputImage            image.Image
-	WatermarkImage        image.Image
 	OpacityAlpha          float64
 	WatermarkWidthPercent float64
 	RotationDegrees       float64
@@ -71,14 +66,6 @@ type GeneralConfig struct {
 // Returns:
 //   - An error describing the first invalid value found, or nil if all fields are valid.
 func (c GeneralConfig) validate() error {
-	if c.InputImage == nil {
-		return fmt.Errorf("input image must be provided")
-	}
-
-	if c.WatermarkImage == nil {
-		return fmt.Errorf("watermark image must be provided")
-	}
-
 	if c.OpacityAlpha <= 0 || c.OpacityAlpha > 1 {
 		return fmt.Errorf("opacity must be greater than 0 and less than or equal to 1: %f", c.OpacityAlpha)
 	}

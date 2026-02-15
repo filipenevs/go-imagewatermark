@@ -19,17 +19,18 @@ type GridPosition struct {
 //
 // The function performs the following steps:
 //  1. Validates the GridConfig.
-//  2. Loads the input image and watermark image in parallel using goroutines.
-//  3. Preprocesses the watermark (resize, rotate, and apply opacity).
-//  4. Generates grid positions based on spacing and offset settings.
-//  5. Applies the watermark at each grid position.
-//  6. Returns the final image with the grid watermarks applied.
+//  2. Preprocesses the watermark (resize, rotate, and apply opacity).
+//  3. Generates grid positions based on spacing and offset settings.
+//  4. Applies the watermark at each grid position.
+//  5. Returns the final image with the grid watermarks applied.
 //
 // The parallel image loading uses goroutines to improve performance for I/O operations.
 // If the offset or spacing values are negative, the grid pattern will be shifted or compressed accordingly.
 //
 // Parameters:
-//   - config: GridConfig struct containing paths, spacing, offset, and watermark appearance settings.
+//   - inputImg: The input image to which the grid watermark will be applied.
+//   - watermarkImg: The watermark image to overlay on the input image.
+//   - config: GridConfig struct containing spacing, offset, and watermark appearance settings.
 //
 // Returns:
 //   - An image.Image containing the final image with the grid watermark pattern applied.
@@ -39,8 +40,6 @@ type GridPosition struct {
 //
 //	config := GridConfig{
 //		GeneralConfig: GeneralConfig{
-//			InputPath:             "input.jpg",
-//			WatermarkPath:         "logo.png",
 //			WatermarkWidthPercent: 20,
 //			OpacityAlpha:          0.5,
 //			RotationDegrees:       45,
@@ -54,13 +53,14 @@ type GridPosition struct {
 //	if err != nil {
 //		log.Fatal(err)
 //	}
-func ApplyGrid(config GridConfig) (image.Image, error) {
+func ApplyGrid(
+	inputImg image.Image,
+	watermarkImg image.Image,
+	config GridConfig,
+) (image.Image, error) {
 	if err := config.validate(); err != nil {
 		return nil, fmt.Errorf("invalid grid watermark configuration: %w", err)
 	}
-
-	inputImg := config.InputImage
-	watermarkImg := config.WatermarkImage
 
 	processedWatermark := preprocessWatermark(inputImg, watermarkImg, config.GeneralConfig)
 

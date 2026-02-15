@@ -10,17 +10,18 @@ import (
 //
 // The function performs the following steps:
 //  1. Validates the SingleConfig to ensure all settings are valid.
-//  2. Loads the input image and watermark image from disk.
-//  3. Preprocesses the watermark (resize, rotate, and apply opacity).
-//  4. Calculates the watermark position based on vertical/horizontal alignment and spacing.
-//  5. Creates an RGBA copy of the input image.
-//  6. Overlays the watermark onto the input image using the "Over" compositing operator.
+//  2. Preprocesses the watermark (resize, rotate, and apply opacity).
+//  3. Calculates the watermark position based on vertical/horizontal alignment and spacing.
+//  4. Creates an RGBA copy of the input image.
+//  5. Overlays the watermark onto the input image using the "Over" compositing operator.
 //
 // The "Over" operator ensures correct alpha blending, making the watermark appear
 // with the correct transparency and blending with any existing pixels.
 //
 // Parameters:
-//   - config: SingleConfig struct containing paths, opacity, size, alignment, and rotation settings.
+//   - inputImg: The input image to which the watermark will be applied.
+//   - watermarkImg: The watermark image to overlay on the input image.
+//   - config: SingleConfig struct containing opacity, size, alignment, and rotation settings.
 //
 // Returns:
 //   - An image.Image containing the final image with the watermark applied.
@@ -30,8 +31,6 @@ import (
 //
 //	config := SingleConfig{
 //		GeneralConfig: GeneralConfig{
-//			InputPath:             "input.jpg",
-//			WatermarkPath:         "logo.png",
 //			WatermarkWidthPercent: 20,
 //			OpacityAlpha:          0.6,
 //			RotationDegrees:       0,
@@ -40,19 +39,18 @@ import (
 //		HorizontalAlign: HorizontalRight,
 //		Spacing:         10,
 //	}
-//	result, err := ApplySingle(config)
+//	result, err := ApplySingle(inputImg, watermarkImg, config)
 //	if err != nil {
 //		log.Fatal(err)
 //	}
 func ApplySingle(
+	inputImg image.Image,
+	watermarkImg image.Image,
 	config SingleConfig,
 ) (image.Image, error) {
 	if err := config.validate(); err != nil {
 		return nil, fmt.Errorf("invalid single watermark configuration: %w", err)
 	}
-
-	inputImg := config.InputImage
-	watermarkImg := config.WatermarkImage
 
 	processedWatermark := preprocessWatermark(inputImg, watermarkImg, config.GeneralConfig)
 
