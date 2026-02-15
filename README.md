@@ -15,10 +15,6 @@ go get github.com/filipenevs/go-imagewatermark
 
 ## 📄 Quick Start
 
-```go
-import "github.com/filipenevs/go-imagewatermark"
-```
-
 ### Single Watermark Example
 
 
