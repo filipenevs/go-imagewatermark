@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	"sync"
 )
 
 // GridPosition represents a single position in the grid where a watermark will be applied.
@@ -60,30 +59,8 @@ func ApplyGrid(config GridConfig) (image.Image, error) {
 		return nil, fmt.Errorf("invalid grid watermark configuration: %w", err)
 	}
 
-	var inputImg, watermarkImg image.Image
-	var inputErr, watermarkErr error
-	var wg sync.WaitGroup
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		inputImg, inputErr = openImage(config.InputPath)
-	}()
-
-	go func() {
-		defer wg.Done()
-		watermarkImg, watermarkErr = openImage(config.WatermarkPath)
-	}()
-
-	wg.Wait()
-
-	if inputErr != nil {
-		return nil, fmt.Errorf("failed to load input image: %w", inputErr)
-	}
-	if watermarkErr != nil {
-		return nil, fmt.Errorf("failed to load watermark image: %w", watermarkErr)
-	}
+	inputImg := config.InputImage
+	watermarkImg := config.WatermarkImage
 
 	processedWatermark := preprocessWatermark(inputImg, watermarkImg, config.GeneralConfig)
 

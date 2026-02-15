@@ -9,7 +9,7 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
-// openImage loads an image from the specified path with auto-orientation support.
+// OpenImage loads an image from the specified path with auto-orientation support.
 //
 // The function automatically corrects the image orientation based on EXIF metadata,
 // ensuring that images taken with different device orientations display correctly.
@@ -20,7 +20,7 @@ import (
 // Returns:
 //   - An image.Image containing the loaded image data.
 //   - An error if the file cannot be read or the format is not supported.
-func openImage(path string) (image.Image, error) {
+func OpenImage(path string) (image.Image, error) {
 	return imaging.Open(path, imaging.AutoOrientation(true))
 }
 

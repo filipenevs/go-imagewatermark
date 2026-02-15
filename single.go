@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	"sync"
 )
 
 // ApplySingle overlays a single watermark onto an input image at a specific position based on the provided configuration.
@@ -52,30 +51,8 @@ func ApplySingle(
 		return nil, fmt.Errorf("invalid single watermark configuration: %w", err)
 	}
 
-	var inputImg, watermarkImg image.Image
-	var inputErr, watermarkErr error
-	var wg sync.WaitGroup
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		inputImg, inputErr = openImage(config.InputPath)
-	}()
-
-	go func() {
-		defer wg.Done()
-		watermarkImg, watermarkErr = openImage(config.WatermarkPath)
-	}()
-
-	wg.Wait()
-
-	if inputErr != nil {
-		return nil, fmt.Errorf("failed to load input image: %w", inputErr)
-	}
-	if watermarkErr != nil {
-		return nil, fmt.Errorf("failed to load watermark image: %w", watermarkErr)
-	}
+	inputImg := config.InputImage
+	watermarkImg := config.WatermarkImage
 
 	processedWatermark := preprocessWatermark(inputImg, watermarkImg, config.GeneralConfig)
 
