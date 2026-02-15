@@ -58,7 +58,6 @@ type GeneralConfig struct {
 // validate checks if the GeneralConfig has valid values for all fields.
 //
 // It performs the following validations:
-//   - InputPath and WatermarkPath must not be empty.
 //   - OpacityAlpha must be greater than 0 and less than or equal to 1.
 //   - WatermarkWidthPercent must be greater than 0 and at most 100.
 //   - RotationDegrees must be between 0 and less than 360.
