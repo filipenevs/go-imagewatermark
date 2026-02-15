@@ -5,8 +5,6 @@ import (
 	"image"
 	"image/draw"
 	"sync"
-
-	_ "golang.org/x/image/webp"
 )
 
 // ApplySingle overlays a single watermark onto an input image at a specific position based on the provided configuration.
