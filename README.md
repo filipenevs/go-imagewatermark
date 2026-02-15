@@ -37,7 +37,6 @@ func main() {
             WatermarkPath:         "logo.png",
             WatermarkWidthPercent: 20,
             OpacityAlpha:          0.5,
-            RotationDegrees:       0,
         },
         VerticalAlign:   imagewatermark.VerticalBottom,
         HorizontalAlign: imagewatermark.HorizontalRight,
@@ -110,6 +109,7 @@ The `GeneralConfig` struct contains common settings for all watermarking operati
 | `OpacityAlpha` | float64 | Transparency level of the watermark | (0.0 - 1.0] |
 | `WatermarkWidthPercent` | float64 | Watermark width as percentage of input image | (0 - 100] |
 | `RotationDegrees` | float64 | Rotation angle for the watermark | [0 - 360] |
+| `ResampleFilter` | imaging.ResampleFilter | Resampling filter used for resizing the watermark | Any valid imaging.ResampleFilter |
 
 ### Single Watermark Configuration
 
@@ -209,6 +209,26 @@ config := imagewatermark.GridConfig{
 }
 
 result, err := imagewatermark.ApplyGrid(config)
+```
+
+### Custom Resampling Filter
+
+```go
+config := imagewatermark.SingleConfig{
+    GeneralConfig: imagewatermark.GeneralConfig{
+        InputPath:             "input.jpg",
+        WatermarkPath:         "logo.png",
+        WatermarkWidthPercent: 20,
+        OpacityAlpha:          0.5,
+        RotationDegrees:       0,
+        ResampleFilter:        imaging.Lanczos, // Use Lanczos filter for high-quality resizing
+    },
+    VerticalAlign:   imagewatermark.VerticalBottom,
+    HorizontalAlign: imagewatermark.HorizontalRight,
+    Spacing:         30,
+}
+
+result, err := imagewatermark.ApplySingle(config)
 ```
 
 ## Error Handling
