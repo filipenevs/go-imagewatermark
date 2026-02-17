@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2026-02-15
+
+### Added
+- Support for batch processing of multiple images.
+- New API `OpenImage` function for loading local file images. 
+
+### Changed
+- Updated to Go 1.26 and latest dependencies.
+- Update function signature to use image interfaces for greater flexibility.
+
+### Refactor
+- `generateGridPositions` now returns a slice of `image.Point` instead of custom struct for better compatibility with standard library functions.
+- Improved calculation of grid positions to better performance and less memory usage.
+
+---
+
 ## [2.1.0] - 2026-02-14
 
 ### Added
