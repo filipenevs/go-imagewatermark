@@ -3,17 +3,9 @@ package imagewatermark
 import (
 	"fmt"
 	"image"
-	"image/draw"
+	"runtime"
+	"sync"
 )
-
-// GridPosition represents a single position in the grid where a watermark will be applied.
-//
-// Fields:
-//   - X: The horizontal coordinate (in pixels) where the watermark should be placed.
-//   - Y: The vertical coordinate (in pixels) where the watermark should be placed.
-type GridPosition struct {
-	X, Y int
-}
 
 // ApplyGrid applies a grid pattern of watermarks to an input image based on the provided configuration.
 //
@@ -62,13 +54,77 @@ func ApplyGrid(
 		return nil, fmt.Errorf("invalid grid watermark configuration: %w", err)
 	}
 
-	processedWatermark := preprocessWatermark(inputImg, watermarkImg, config.GeneralConfig)
+	preparedWM := watermarkImg
 
-	positions := generateGridPositions(inputImg, processedWatermark, config)
+	if config.OpacityAlpha < 1 {
+		preparedWM = applyOpacity(preparedWM, config.OpacityAlpha)
+	}
 
-	resultImg := applyGridWatermarks(inputImg, processedWatermark, positions)
+	if config.RotationDegrees != 0 {
+		preparedWM = rotateImage(preparedWM, config.RotationDegrees)
+	}
 
-	return resultImg, nil
+	preparedWM = resizeWatermark(preparedWM, inputImg, config.GeneralConfig)
+	positions := generateGridPositions(inputImg, preparedWM, config)
+
+	result := applyGridWatermarks(inputImg, preparedWM, positions)
+
+	return result, nil
+}
+
+func BatchApplyGrid(
+	inputImgs []image.Image,
+	watermarkImg image.Image,
+	config GridConfig,
+) ([]image.Image, error) {
+	if err := config.validate(); err != nil {
+		return nil, fmt.Errorf("invalid grid watermark configuration: %w", err)
+	}
+
+	maxWorkers := config.MaxWorkers
+	if maxWorkers <= 0 {
+		maxWorkers = runtime.NumCPU()
+	}
+
+	preparedWM := watermarkImg
+
+	if config.OpacityAlpha < 1 {
+		preparedWM = applyOpacity(preparedWM, config.OpacityAlpha)
+	}
+	if config.RotationDegrees != 0 {
+		preparedWM = rotateImage(preparedWM, config.RotationDegrees)
+	}
+
+	numImages := len(inputImgs)
+	results := make([]image.Image, numImages)
+
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxWorkers)
+
+	for i := 0; i < numImages; i++ {
+		wg.Add(1)
+
+		go func(index int) {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			currImage := inputImgs[index]
+			currentWM := resizeWatermark(preparedWM, currImage, config.GeneralConfig)
+			positions := generateGridPositions(currImage, currentWM, config)
+
+			canvas := generateBaseCanvas(currImage)
+
+			result := applyGridWatermarks(canvas, currentWM, positions)
+
+			results[index] = result
+		}(i)
+	}
+
+	wg.Wait()
+
+	return results, nil
 }
 
 // generateGridPositions calculates all positions where watermarks should be placed in a grid pattern.
@@ -87,15 +143,30 @@ func ApplyGrid(
 //
 // Returns:
 //   - A slice of GridPosition objects representing all positions where watermarks should be placed.
-func generateGridPositions(inputImg, watermarkImg image.Image, config GridConfig) []GridPosition {
-	inputBounds := inputImg.Bounds()
-	watermarkBounds := watermarkImg.Bounds()
+func generateGridPositions(inputImg, watermarkImg image.Image, config GridConfig) []image.Point {
+	inputW, inputH := inputImg.Bounds().Dx(), inputImg.Bounds().Dy()
+	wmW, wmH := watermarkImg.Bounds().Dx(), watermarkImg.Bounds().Dy()
 
-	var positions []GridPosition
+	if config.OffsetX >= inputW || config.OffsetY >= inputH {
+		return nil
+	}
 
-	for y := config.OffsetY; y < inputBounds.Dy(); y += config.GridSpacingY + watermarkBounds.Dy() {
-		for x := config.OffsetX; x < inputBounds.Dx(); x += config.GridSpacingX + watermarkBounds.Dx() {
-			positions = append(positions, GridPosition{X: x, Y: y})
+	stepX := wmW + config.GridSpacingX
+	stepY := wmH + config.GridSpacingY
+
+	countX := (inputW - config.OffsetX + stepX - 1) / stepX
+	countY := (inputH - config.OffsetY + stepY - 1) / stepY
+
+	totalPoints := countX * countY
+	if totalPoints <= 0 {
+		return nil
+	}
+
+	positions := make([]image.Point, 0, totalPoints)
+
+	for y := config.OffsetY; y < inputH; y += stepY {
+		for x := config.OffsetX; x < inputW; x += stepX {
+			positions = append(positions, image.Point{X: x, Y: y})
 		}
 	}
 
@@ -105,7 +176,7 @@ func generateGridPositions(inputImg, watermarkImg image.Image, config GridConfig
 // applyGridWatermarks applies watermarks at each position in the provided grid.
 //
 // This function creates a copy of the input image and then overlays the watermark image
-// at each GridPosition. The watermarks are composited using the "Over" operator, which means
+// at each image.Point. The watermarks are composited using the "Over" operator, which means
 // that watermarks in front will cover watermarks behind them if they overlap.
 //
 // The function does not use goroutines as the bottleneck is typically the drawing operations
@@ -114,25 +185,15 @@ func generateGridPositions(inputImg, watermarkImg image.Image, config GridConfig
 // Parameters:
 //   - inputImg: The input image to which watermarks will be applied.
 //   - watermarkImg: The preprocessed watermark image to be applied.
-//   - positions: A slice of GridPosition objects indicating where to place each watermark.
+//   - positions: A slice of image.Point objects indicating where to place each watermark.
 //
 // Returns:
 //   - An image.Image containing the input image with watermarks applied at all grid positions.
-func applyGridWatermarks(inputImg, watermarkImg image.Image, positions []GridPosition) image.Image {
-
-	bounds := inputImg.Bounds()
-	canvas := image.NewRGBA(bounds)
-
-	draw.Draw(canvas, bounds, inputImg, bounds.Min, draw.Src)
-
-	wmBounds := watermarkImg.Bounds()
+func applyGridWatermarks(inputImg, watermarkImg image.Image, positions []image.Point) image.Image {
+	canvas := generateBaseCanvas(inputImg)
 
 	for _, pos := range positions {
-		dr := image.Rectangle{
-			Min: image.Point{X: pos.X, Y: pos.Y},
-			Max: image.Point{X: pos.X + wmBounds.Dx(), Y: pos.Y + wmBounds.Dy()},
-		}
-		draw.Draw(canvas, dr, watermarkImg, image.Point{0, 0}, draw.Over)
+		drawWatermarkAtPosition(canvas, watermarkImg, pos)
 	}
 
 	return canvas
