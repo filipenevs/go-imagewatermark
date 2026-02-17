@@ -3,14 +3,14 @@
 
 This Go package provides a simple and configurable way to overlay watermarks on images. It lets you control watermark opacity, size, alignment and rotation.
 
-Supports both single watermark placement and grid patterns with full customization options.
+Supports both single watermark placement and grid patterns with full customization options and support also for batch processing multiple images concurrently.
 
 ---
 
 ## ⬇️ Installation
 
 ```bash
-go get github.com/filipenevs/go-imagewatermark
+go get github.com/filipenevs/go-imagewatermark/v3
 ```
 
 ## 📄 Quick Start
@@ -23,14 +23,22 @@ package main
 
 import (
     "log"
-    "github.com/filipenevs/go-imagewatermark"
+    "github.com/filipenevs/go-imagewatermark/v3"
 )
 
 func main() {
+    inputImg, inputErr := imagewatermark.OpenImage("input.jpg")
+    if inputErr != nil {
+        log.Fatal(inputErr)
+    }
+
+    watermarkImg, watermarkErr := imagewatermark.OpenImage("logo.png")
+    if watermarkErr != nil {
+        log.Fatal(watermarkErr)
+    }
+
     config := imagewatermark.SingleConfig{
         GeneralConfig: imagewatermark.GeneralConfig{
-            InputPath:             "input.jpg",
-            WatermarkPath:         "logo.png",
             WatermarkWidthPercent: 20,
             OpacityAlpha:          0.5,
         },
@@ -39,12 +47,7 @@ func main() {
         Spacing:         30,
     }
 
-    result, err := imagewatermark.ApplySingle(config)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    err = SaveImageToFile(result, "png", "output_image.png")
+    result, err := imagewatermark.ApplySingle(inputImg, watermarkImg, config)
     if err != nil {
         log.Fatal(err)
     }
@@ -59,14 +62,22 @@ package main
 
 import (
     "log"
-    "github.com/filipenevs/go-imagewatermark"
+    "github.com/filipenevs/go-imagewatermark/v3"
 )
 
 func main() {
+    inputImg, inputErr := imagewatermark.OpenImage("input.jpg")
+    if inputErr != nil {
+        log.Fatal(inputErr)
+    }
+
+    watermarkImg, watermarkErr := imagewatermark.OpenImage("logo.png")
+    if watermarkErr != nil {
+        log.Fatal(watermarkErr)
+    }
+
     config := imagewatermark.GridConfig{
         GeneralConfig: imagewatermark.GeneralConfig{
-            InputPath:             "input.jpg",
-            WatermarkPath:         "logo.png",
             WatermarkWidthPercent: 10,
             OpacityAlpha:          0.3,
             RotationDegrees:       45,
@@ -77,12 +88,7 @@ func main() {
         OffsetY:      -15,
     }
 
-    result, err := imagewatermark.ApplyGrid(config)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    err = SaveImageToFile(result, "png", "output_image.png")
+    result, err := imagewatermark.ApplyGrid(inputImg, watermarkImg, config)
     if err != nil {
         log.Fatal(err)
     }
@@ -100,12 +106,11 @@ The `GeneralConfig` struct contains common settings for all watermarking operati
 
 | Field | Type | Description | Range |
 |-------|------|-------------|-------|
-| `InputPath` | string | Path to the input image file | Any valid file path |
-| `WatermarkPath` | string | Path to the watermark image file | Any valid file path |
 | `OpacityAlpha` | float64 | Transparency level of the watermark | (0.0 - 1.0] |
 | `WatermarkWidthPercent` | float64 | Watermark width as percentage of input image | (0 - 100] |
 | `RotationDegrees` | float64 | Rotation angle for the watermark | [0 - 360] |
 | `ResampleFilter` | imaging.ResampleFilter | Resampling filter used for resizing the watermark | Any valid imaging.ResampleFilter |
+| `MaxWorkers` | int | Maximum number of concurrent workers for batch processing (Default is number of CPU cores) | Non-negative integer |
 
 ### Single Watermark Configuration
 
@@ -122,8 +127,6 @@ The `SingleConfig` extends `GeneralConfig` with alignment options:
 ```go
 config := imagewatermark.SingleConfig{
     GeneralConfig: imagewatermark.GeneralConfig{
-        InputPath:             "input.jpg",
-        WatermarkPath:         "logo.png",
         WatermarkWidthPercent: 20,
         OpacityAlpha:          0.7,
         RotationDegrees:       0,
@@ -132,8 +135,6 @@ config := imagewatermark.SingleConfig{
     HorizontalAlign: imagewatermark.HorizontalRight,
     Spacing:         15,
 }
-
-result, err := imagewatermark.ApplySingle(config)
 ```
 
 ### Grid Watermark Configuration
@@ -152,8 +153,6 @@ The `GridConfig` extends `GeneralConfig` with grid-specific options:
 ```go
 config := imagewatermark.GridConfig{
     GeneralConfig: imagewatermark.GeneralConfig{
-        InputPath:             "input.jpg",
-        WatermarkPath:         "logo.png",
         WatermarkWidthPercent: 10,
         OpacityAlpha:          0.3,
         RotationDegrees:       0,
@@ -163,8 +162,6 @@ config := imagewatermark.GridConfig{
     OffsetX:      -50,
     OffsetY:      -50,
 }
-
-result, err := imagewatermark.ApplyGrid(config)
 ```
 
 ## 🧠 Advanced Examples
@@ -174,8 +171,6 @@ result, err := imagewatermark.ApplyGrid(config)
 ```go
 config := imagewatermark.SingleConfig{
     GeneralConfig: imagewatermark.GeneralConfig{
-        InputPath:             "input.jpg",
-        WatermarkPath:         "logo.png",
         WatermarkWidthPercent: 15,
         OpacityAlpha:          0.5,
         RotationDegrees:       0,
@@ -183,8 +178,6 @@ config := imagewatermark.SingleConfig{
     VerticalAlign:   imagewatermark.VerticalRandom,   // Random vertically
     HorizontalAlign: imagewatermark.HorizontalRandom, // Random horizontally
 }
-
-result, err := imagewatermark.ApplySingle(config)
 ```
 
 ### Rotated Grid Pattern
@@ -192,8 +185,6 @@ result, err := imagewatermark.ApplySingle(config)
 ```go
 config := imagewatermark.GridConfig{
     GeneralConfig: imagewatermark.GeneralConfig{
-        InputPath:             "input.jpg",
-        WatermarkPath:         "logo.png",
         WatermarkWidthPercent: 8,
         OpacityAlpha:          0.25,
         RotationDegrees:       45, // Rotate watermarks 45 degrees
@@ -203,8 +194,6 @@ config := imagewatermark.GridConfig{
     OffsetX:      -75,
     OffsetY:      -75,
 }
-
-result, err := imagewatermark.ApplyGrid(config)
 ```
 
 ### Custom Resampling Filter
@@ -212,8 +201,6 @@ result, err := imagewatermark.ApplyGrid(config)
 ```go
 config := imagewatermark.SingleConfig{
     GeneralConfig: imagewatermark.GeneralConfig{
-        InputPath:             "input.jpg",
-        WatermarkPath:         "logo.png",
         WatermarkWidthPercent: 20,
         OpacityAlpha:          0.5,
         RotationDegrees:       0,
@@ -223,16 +210,34 @@ config := imagewatermark.SingleConfig{
     HorizontalAlign: imagewatermark.HorizontalRight,
     Spacing:         30,
 }
-
-result, err := imagewatermark.ApplySingle(config)
 ```
+
+### Batch Processing Multiple Images
+
+```go
+cfg := imagewatermark.GridConfig{
+    GeneralConfig: imagewatermark.GeneralConfig{
+        OpacityAlpha:          0.3,
+        WatermarkWidthPercent: 10,
+        RotationDegrees:       10,
+        MaxWorkers:            4, // Limit to 4 concurrent workers for batch processing
+    },
+    GridSpacingX: 40,
+    GridSpacingY: 40,
+    OffsetX:      -15,
+    OffsetY:      -15,
+}
+
+newImgs, err := imagewatermark.BatchApplyGrid([]image.Image{inputImg1, inputImg2}, watermarkImg, cfg)
+```
+
 
 ## Error Handling
 
 The library provides detailed error messages for common issues:
 
 ```go
-result, err := imagewatermark.ApplySingle(config)
+result, err := imagewatermark.ApplySingle(inputImg, watermarkImg, config)
 if err != nil {
     log.Printf("Error: %v", err)
     // Possible errors:
