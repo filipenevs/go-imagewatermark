@@ -48,11 +48,13 @@ const (
 //   - WatermarkWidthPercent: Desired watermark width as a percentage of the input image width (0-100).
 //   - RotationDegrees: Rotation angle for the watermark in degrees (0-360).
 //   - ResampleFilter: Resampling filter to use when resizing the watermark. (Default is CatmullRom)
+//   - MaxWorkers: Maximum number of concurrent workers for batch processing (Default is number of CPU cores).
 type GeneralConfig struct {
 	OpacityAlpha          float64
 	WatermarkWidthPercent float64
 	RotationDegrees       float64
 	ResampleFilter        imaging.ResampleFilter
+	MaxWorkers            int
 }
 
 // validate checks if the GeneralConfig has valid values for all fields.
@@ -61,6 +63,7 @@ type GeneralConfig struct {
 //   - OpacityAlpha must be greater than 0 and less than or equal to 1.
 //   - WatermarkWidthPercent must be greater than 0 and at most 100.
 //   - RotationDegrees must be between 0 and less than 360.
+//   - MaxWorkers must be a non-negative integer.
 //
 // Returns:
 //   - An error describing the first invalid value found, or nil if all fields are valid.
@@ -75,6 +78,10 @@ func (c GeneralConfig) validate() error {
 
 	if c.RotationDegrees < 0 || c.RotationDegrees > 360 {
 		return fmt.Errorf("rotation degrees must be between 0 and 360 (360 result in no rotation): %f", c.RotationDegrees)
+	}
+
+	if c.MaxWorkers < 0 {
+		return fmt.Errorf("max workers must be a non-negative integer: %d", c.MaxWorkers)
 	}
 
 	return nil
